@@ -33,4 +33,4 @@ class JSON_Handle:
 if __name__ == "__main__":
     #JSON_Handle.clear_all_files()
 
-    JSON_Handle("aaaaa").clearFille("nombreSensores.json")
+    JSON_Handle("aaaaa").clearFille("Sensores.json")

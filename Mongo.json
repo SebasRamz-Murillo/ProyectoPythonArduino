@@ -1,1 +1,1 @@
-[]
+[{"user": "admin", "contra": "root", "cluster": "cluster0", "token": "hcy4jnm", "bd": "Sensores", "url": "mongodb+srv://admin:root@cluster0.hcy4jnm.mongodb.net/?retryWrites=true&w=majority", "stat": 1}]

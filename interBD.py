@@ -21,7 +21,7 @@ class interBD:
                 nomBd = input("Nombre de la bd:")
                 bd = nomBd
             else:
-                bd = "VentasRamirez"
+                bd = "SensoresEquipo"
             mongoBD = Mongo(user=user, contra=contra, cluster=clus, token=token, bd=bd)
         elif opci == "1":
             print("Inserte la url de conexion")
@@ -106,8 +106,6 @@ class interBD:
             check = Mongo(url=conexAc[0]['url'], bd=conexAc[0]['bd'], stat=1)
             bandera = check.getStatus()
             return check, bandera, True
-        else:
-            return False
 
     def seleccionarConexionesConectadas(self):
         tam, data, x = self.mostrarConexionesConectadas()

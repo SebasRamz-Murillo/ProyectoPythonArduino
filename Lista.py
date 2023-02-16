@@ -10,6 +10,9 @@ class Lista:
         self.listas.append(datos)
         self.json.guardar_a_json(self.listas)
 
+    def borrarInfo(self,archivo):
+        self.json.guardar_a_json([])
+
     def mostrar(self):
         return self.listas
 

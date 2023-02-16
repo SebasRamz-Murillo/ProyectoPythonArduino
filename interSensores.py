@@ -25,11 +25,11 @@ class sensoresContr:
     def nombrarSens(self):
         sensores = self.nom.from_json()
         print("Sensores detectados:")
-        print("{:<1} {:<20} {:<20} ".format("#", "Sensor", "Tipo"))
+        print("{:<1} {:<20} | {:<20} {:<20} | ".format("#", "Clave", "Sensor", "Tipo"))
         i = 0
         for sensor in sensores:
             i = i + 1
-            print("{:<1} {:<20} {:<20} ".format(i, sensor.nombre, sensor.tipo))
+            print("{:<1} {:<20} | {:<20} {:<20} | ".format(i, sensor.clave, sensor.nombre, sensor.tipo))
         seleccion = input("Seleccione un sensor con el id: ")
         seleccion = int(seleccion)
         nuevoNom = input("Nombre del sensor: ")

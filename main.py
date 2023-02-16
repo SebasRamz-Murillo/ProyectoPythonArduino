@@ -4,6 +4,7 @@ from Senso import Sensores
 from JSON_Handle import JSON_Handle
 import os
 from interBD import interBD
+from Mongo import Mongo
 
 
 class main:
@@ -13,31 +14,44 @@ class main:
         self.tiempo = 0
         self.tiempoMax = 5
         self.bandera = 0
+        self.dispositivo=""
+        self.mongo=Mongo()
+        self.obj=Mongo()
+        self.bandera=""
+
 
 
     def lectura(self):
-        tiempo = time.time()
-        if self.bandera==2:
-            pass
-            # if interBD().checkarConexionEnUso():  # si da
-            #     obj, bandera, bool = interBD().checkarConexionEnUso()
-            #     obj
-            # while time.time() < tiempo + self.tiempoMax:
-            #     user_input = input()
-            #     if user_input == " ":
-            #         break
-            #     sens, val = self.disp.lectura()
-            #     nombre, id = self.disp.nom.filter("clave", sens)
-            #     sensor = Sensores(nombre[0]['nombre'], val)
-            #     self.sensores.agregar(sensor.to_dict())
-            #     print(nombre[0]['nombre'])
-            #     # if obj.insertOne
-            # self.json.clearFille(self.sensores.archivo)
+        print("Lectura de sensores")
+        print(self.bandera2)
+        if self.bandera2==1: #si esta en conexion
+            tiempo = time.time()
+            print("Conexion")
+            if self.sensores.mostrar() > 1:
+                pass
+
+            while True:
+                #descomenta estas lineas para hacerlo controlable con espacio
+                # user_input = input()
+                # # if user_input == " ":
+                # #     break
+
+                sens, val = self.disp.lectura()
+                nombre, id = self.disp.nom.filter("clave", sens)
+                sensor = Sensores(nombre[0]['nombre'], val)
+                self.sensores.agregar(sensor.to_dict())
+                print(nombre[0]['nombre'])
+                if self.obj.insert_one("Sensores",sensor.to_dict()) is False:
+                    self.bandera2==2
+                    print("Se perdio la conexion, guardando solo localmente")
+                    self.sensores.borrarInfo("Sensores.json")
+                    self.lectura()
+            # self.sensores.borrarInfo("Sensores.json")
         else:
             while True:
-                user_input = input()
-                if user_input == " ":
-                    break
+                # user_input = input()
+                # if user_input == " ":
+                #     break
                 sens, val = self.disp.lectura()
                 nombre, id = self.disp.nom.filter("clave", sens)
                 sensor = Sensores(nombre[0]['nombre'], val)
@@ -52,15 +66,18 @@ class main:
         self.clear()
         print("------------------------------------")
         print("Sistema de gestión de dispositivos arduinos")
-        # if interBD().checkarConexionEnUso():
-        #     self.bandera = 1
-        #     obj, bandera, bool = interBD().checkarConexionEnUso()
-        #     print(f"Datos de conexion: {obj.user}-{obj.cluster}-{obj.bd}------")
-        #     print(f"Estado: {bandera}")
-        # else:
-        #     self.bandera = 2
-        #     print("No hay conexion activa")
-        self.bandera = 2
+        resultado = interBD().checkarConexionEnUso()
+        if resultado:
+            self.bandera2 = 1
+            self.obj=resultado[0]
+            self.obj.conect()
+            self.bandera=resultado[1]
+            print(f"Datos de conexion: {self.obj.user}-{self.obj.cluster}-{self.obj.bd}------")
+            print(f"Estado: {self.bandera}")
+
+        else:
+            self.bandera2 = 2
+            print("No hay conexion activa")
         print(f"----Puerto: {self.disp.puerto}-----")
         print("1. Configurar sensores")
         print("2. Conexiones")
@@ -73,7 +90,7 @@ class main:
 
     def main(self):
         opcion = ""
-        
+
         while opcion != "0":
             opcion = self.menuGeneral()
             if opcion == "1":
