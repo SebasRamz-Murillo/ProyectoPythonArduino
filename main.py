@@ -11,43 +11,47 @@ class main:
     def __init__(self):
         self.disp = sensoresContr() #pide datos pero no se
         self.sensores = Sensores()
-        self.tiempo = 0
-        self.tiempoMax = 5
         self.bandera = 0
         self.dispositivo=""
         self.mongo=Mongo()
         self.obj=Mongo()
         self.bandera=""
 
-
+    def cronometro(self, tiempo_deseado):
+        tiempo_inicio = time.time()
+        tiempo_transcurrido = 0
+        while tiempo_transcurrido < tiempo_deseado:
+            tiempo_transcurrido = time.time() - tiempo_inicio
+        return tiempo_transcurrido >= tiempo_deseado, tiempo_transcurrido
 
     def lectura(self):
         print("Lectura de sensores")
-        print(self.bandera2)
         if self.bandera2==1: #si esta en conexion
-            tiempo = time.time()
             print("Conexion")
-            if self.sensores.mostrar() > 1:
-                pass
-
-            while True:
+            lista=self.sensores.mostrar()
+            if lista: #si la lista de sensores tiene objetos, debe ingresarlos a la bd antes de los otros
+                self.obj.insert_many("Sensores",lista)
+                self.sensores.borrarInfo("Sensores.json")
+            while self.cronometro(15): #tiempo en segundos
                 #descomenta estas lineas para hacerlo controlable con espacio
                 # user_input = input()
                 # # if user_input == " ":
                 # #     break
-
                 sens, val = self.disp.lectura()
                 nombre, id = self.disp.nom.filter("clave", sens)
                 sensor = Sensores(nombre[0]['nombre'], val)
                 self.sensores.agregar(sensor.to_dict())
                 print(nombre[0]['nombre'])
-                if self.obj.insert_one("Sensores",sensor.to_dict()) is False:
-                    self.bandera2==2
+                if self.obj.insert_one("Sensores",sensor.to_dict()) is False: #si no se inserto, debe cambiar la bandera
+                    self.bandera2=2
                     print("Se perdio la conexion, guardando solo localmente")
-                    self.sensores.borrarInfo("Sensores.json")
-                    self.lectura()
-            # self.sensores.borrarInfo("Sensores.json")
-        else:
+                    ultimoSensor=sensor.to_dict() #guarda la lecutra donde sucede la desconexion
+                    self.sensores.borrarInfo("Sensores.json")#borra datos para no repetirlos
+                    self.sensores.agregar(ultimoSensor)
+                    return self.lectura()#debe regresar al metodo para empezar a guardar solo local
+            self.sensores.borrarInfo("Sensores.json") #despues del que se cumpla el tiempo, borra los datos
+            return self.lectura()
+        else: #guarda solo local
             while True:
                 # user_input = input()
                 # if user_input == " ":

@@ -54,6 +54,12 @@ class MongoConexion:
             return True
         else:
             return False
+
+    def insert_many(self, collection, data_list):
+        coll = self.db[collection]
+        result = coll.insert_many(data_list)
+        return result.acknowledged
+
     def find_one(self, collection, query={}):
         coll = self.db[collection]
         return coll.find_one(query)
