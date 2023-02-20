@@ -11,6 +11,7 @@ class Lista:
         self.json.guardar_a_json(self.listas)
 
     def borrarInfo(self,archivo):
+        self.listas.clear()
         self.json.guardar_a_json([])
 
     def mostrar(self):

@@ -1,3 +1,5 @@
+from bson import ObjectId
+
 from Lista import Lista
 
 
@@ -10,6 +12,7 @@ class Sensores(Lista):
         super().__init__(self.archivo)
         self.nombre = nombre
         self.valor = valor
+        self._id = ObjectId()
 
     def __str__(self):
         return f"{self.nombre},{self.valor}"
@@ -27,7 +30,7 @@ class Sensores(Lista):
             listaDicc.append(self.listas)
         else:
 
-            diccionario = {"nombre": self.nombre, "valor": self.valor}
+            diccionario = {'_id': str(self._id),"nombre": self.nombre, "valor": self.valor}
             listaDicc.append(diccionario)
             return diccionario
 

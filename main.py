@@ -6,6 +6,7 @@ import os
 from interBD import interBD
 from Mongo import Mongo
 import threading
+import keyboard
 
 
 class main:
@@ -17,12 +18,18 @@ class main:
         self.mongo=Mongo()
         self.obj=Mongo()
         self.bandera=""
+        self.flag=0
+        self.stop_event = threading.Event()
 
     def contador(self, tiempo):
         for i in range(tiempo, -1, -1):
-            print(i)
             time.sleep(1)
         return True
+
+    def detectar_enter(self):
+        self.enter_pressed = False
+        keyboard.wait("enter")  # espera hasta que se presione Enter
+        self.enter_pressed = True
 
     def lectura(self):
         print("Lectura de sensores")
@@ -34,28 +41,48 @@ class main:
                 self.obj.insert_many("Sensores",lista)
                 self.sensores.borrarInfo("Sensores.json")
             print("Empezando..")
+            enter_thread = threading.Thread(target=self.detectar_enter)
+            enter_thread.start()
             contador_thread = threading.Thread(target=self.contador, args=(30,))
             contador_thread.start()
-            while contador_thread.is_alive(): #tiempo en segundos
-                #descomenta estas lineas para hacerlo controlable con espacio
-                # user_input = input()
-                # # if user_input == " ":
-                # #     break
+            while True: #tiempo en segundos
+                if contador_thread.is_alive():
+                    pass
+                else:
+                    self.sensores.borrarInfo("Sensores.json")
+                    self.lectura()
+
+                if enter_thread.is_alive():
+                    pass
+                else:
+                    aux=self.sensores.mostrar()
+                    if len(aux)>=1:
+                        ubi = len(aux) - 1
+                        if self.obj.find_one("Sensores",aux[ubi]):
+                            self.sensores.borrarInfo("Sensores.json")
+                        else:
+                            self.obj.insert_one("Sensores", aux[ubi])
+                            self.sensores.borrarInfo("Sensores.json")
+                    print("Enter presionado, deteniendo lectura de sensores")
+                    self.main()
                 sens, val = self.disp.lectura()
                 nombre, id = self.disp.nom.filter("clave", sens)
                 sensor = Sensores(nombre[0]['nombre'], val)
                 self.sensores.agregar(sensor.to_dict())
                 # print(nombre[0]['nombre'])
+                print("|{:<25} {:<4}|".format(nombre[0]['nombre'], val))
+
                 if self.obj.insert_one("Sensores",sensor.to_dict()) is False: #si no se inserto, debe cambiar la bandera
                     self.bandera2=2
                     print("Se perdio la conexion, guardando solo localmente")
                     ultimoSensor=sensor.to_dict() #guarda la lecutra donde sucede la desconexion
                     self.sensores.borrarInfo("Sensores.json")#borra datos para no repetirlos
                     self.sensores.agregar(ultimoSensor)
-                    return self.lectura()#debe regresar al metodo para empezar a guardar solo local
-            self.sensores.borrarInfo("Sensores.json")            #despues del que se cumpla el tiempo, borra los datos
-            return self.lectura()
+                    self.lectura()#debe regresar al metodo para empezar a guardar solo local
+
         else: #guarda solo local
+            enter_thread = threading.Thread(target=self.detectar_enter)
+            enter_thread.start()
             while True:
                 print("Escritura..")
                 user_input = input()
@@ -65,6 +92,9 @@ class main:
                 nombre, id = self.disp.nom.filter("clave", sens)
                 sensor = Sensores(nombre[0]['nombre'], val)
                 self.sensores.agregar(sensor.to_dict())
+                if self.enter_pressed:  # si se ha detectado la pulsación de Enter, romper el ciclo
+                    print("Enter presionado, deteniendo lectura de sensores")
+                    return self.main()
                 # print(nombre[0]['nombre'])
 
 
